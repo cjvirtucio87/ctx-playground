@@ -6,6 +6,20 @@ import (
 	"time"
 )
 
+func cancellingParentCancelsChildren() {
+	fmt.Println("cancelling parent cancels children")
+	ctx, cancel := context.WithCancel(context.Background())
+	defer func(cancel context.CancelFunc) {
+		cancel()
+		fmt.Println("done")
+	}(cancel)
+
+	go fooBar(ctx, 20)
+	go helloWorld(ctx, 20)
+
+	time.Sleep(5 * time.Second)
+}
+
 func fooBar(ctx context.Context, tries int) {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
@@ -31,11 +45,5 @@ func printMsg(src string, msg string, num int) {
 }
 
 func main() {
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	go fooBar(ctx, 20)
-	go helloWorld(ctx, 20)
-
-	time.Sleep(5 * time.Second)
+	cancellingParentCancelsChildren()
 }
