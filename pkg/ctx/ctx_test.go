@@ -15,11 +15,8 @@ func TestCancellingChildDoesNotCancelParent(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	resFooBarC := make(chan int)
-	go fooBar(ctx, 1, resFooBarC)
-
-	resHelloWorldC := make(chan int)
-	go helloWorld(ctx, 20, resHelloWorldC)
+	fooBar(ctx, 1)
+	helloWorld(ctx, 20)
 
 	expectedParentRes := 5
 	var parentRes int
@@ -35,13 +32,9 @@ func TestCancellingChildDoesNotCancelParent(t *testing.T) {
 
 func TestCancellingParentCancelsChildren(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
-	resFooBarC := make(chan int)
 
-	go fooBar(ctx, 10, resFooBarC)
-
-	resHelloWorldC := make(chan int)
-	go helloWorld(ctx, 20, resHelloWorldC)
-
+	resFooBarC := fooBar(ctx, 10)
+	resHelloWorldC := helloWorld(ctx, 20)
 
 	time.Sleep(5 * time.Second)
 	cancel()
@@ -57,40 +50,50 @@ func TestCancellingParentCancelsChildren(t *testing.T) {
 	}
 }
 
-func fooBar(ctx context.Context, tries int, resC chan<- int) {
-	ctx, cancel := context.WithCancel(ctx)
-	defer cleanup(cancel, resC)
+func fooBar(ctx context.Context, tries int) <-chan int {
+	resC := make(chan int)
+	go func(resC chan int) {
+		ctx, cancel := context.WithCancel(ctx)
+		defer cleanup(cancel, resC)
 
-	var val int
-	for i := tries; i >= 0; i-- {
-		val = tries - i
-		select {
-		case <- ctx.Done():
-			resC <-val
-			return
-		default:
-			time.Sleep(1 * time.Second)
+		var val int
+		for i := tries; i >= 0; i-- {
+			val = tries - i
+			select {
+			case <- ctx.Done():
+				resC <-val
+				return
+			default:
+				time.Sleep(1 * time.Second)
+			}
 		}
-	}
 
-	resC <-val
+		resC <-val
+	}(resC)
+
+	return resC
 }
 
-func helloWorld(ctx context.Context, tries int, resC chan<- int) {
-	ctx, cancel := context.WithCancel(ctx)
-	defer cleanup(cancel, resC)
+func helloWorld(ctx context.Context, tries int) <-chan int {
+	resC := make(chan int)
+	go func(resC chan int) {
+		ctx, cancel := context.WithCancel(ctx)
+		defer cleanup(cancel, resC)
 
-	var val int
-	for i := tries; i >= 0; i-- {
-		val = tries - i
-		select {
-		case <- ctx.Done():
-			resC <-val
-			return
-		default:
-			time.Sleep(1 * time.Second)
+		var val int
+		for i := tries; i >= 0; i-- {
+			val = tries - i
+			select {
+			case <- ctx.Done():
+				resC <-val
+				return
+			default:
+				time.Sleep(1 * time.Second)
+			}
 		}
-	}
 
-	resC <-val
+		resC <-val
+	}(resC)
+
+	return resC
 }
