@@ -2,7 +2,6 @@ package ctx_test
 
 import (
 	"context"
-	"fmt"
 	"testing"
 	"time"
 )
@@ -13,7 +12,6 @@ func cleanup (cancel context.CancelFunc, resChan chan<- int) {
 }
 
 func TestCancellingChildDoesNotCancelParent(t *testing.T) {
-	fmt.Println("cancelling child does not cancel parent")
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -36,7 +34,6 @@ func TestCancellingChildDoesNotCancelParent(t *testing.T) {
 }
 
 func TestCancellingParentCancelsChildren(t *testing.T) {
-	fmt.Println("cancelling parent cancels children")
 	ctx, cancel := context.WithCancel(context.Background())
 	resFooBarC := make(chan int)
 
