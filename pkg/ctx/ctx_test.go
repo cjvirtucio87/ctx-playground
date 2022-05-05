@@ -49,14 +49,14 @@ func TestCancellingParentCancelsChildren(t *testing.T) {
 	time.Sleep(5 * time.Second)
 	cancel()
 
-	expectedFooBar := 10
-	if resFooBar := <-resFooBarC; expectedFooBar == resFooBar {
-		t.Fatalf("%d == %d", expectedFooBar, resFooBar)
+	expectedMaxFooBar := 10
+	if resFooBar := <-resFooBarC; expectedMaxFooBar == resFooBar {
+		t.Fatalf("%d == %d", expectedMaxFooBar, resFooBar)
 	}
 
-	expectedHelloWorld := 20
-	if resHelloWorld := <-resHelloWorldC; expectedHelloWorld == resHelloWorld {
-		t.Fatalf("%d == %d", expectedHelloWorld, resHelloWorld)
+	expectedMaxHelloWorld := 20
+	if resHelloWorld := <-resHelloWorldC; expectedMaxHelloWorld == resHelloWorld {
+		t.Fatalf("%d == %d", expectedMaxHelloWorld, resHelloWorld)
 	}
 }
 
