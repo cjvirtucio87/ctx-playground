@@ -15,14 +15,26 @@ func TestCancellingChildDoesNotCancelParent(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	fooBar(ctx, 1)
+	fooBar(ctx, 0)
 	helloWorld(ctx, 20)
 
 	expectedParentRes := 5
 	var parentRes int
-	for parentRes < expectedParentRes {
-		parentRes += 1
-		time.Sleep(1 * time.Second)
+	var completed bool
+	for !completed {
+		select {
+		case <-ctx.Done():
+			completed = true
+			break
+		default:
+			if parentRes == expectedParentRes {
+				completed = true
+				break
+			}
+
+			parentRes += 1
+			time.Sleep(1 * time.Second)
+		}
 	}
 
 	if expectedParentRes != parentRes {
