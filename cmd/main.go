@@ -69,8 +69,5 @@ func printMsg(src string, msg string, num int) {
 
 func main() {
 	cancellingParentCancelsChildren()
-	time.Sleep(5 * time.Second)
-
 	cancellingChildDoesNotCancelParent()
-	time.Sleep(5 * time.Second)
 }
